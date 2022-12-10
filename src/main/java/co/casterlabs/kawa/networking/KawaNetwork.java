@@ -13,10 +13,14 @@ import com.esotericsoftware.kryonet.Connection;
 import com.esotericsoftware.kryonet.Listener;
 
 import co.casterlabs.kawa.networking.packets.PacketAuthenticateHandshake;
+import lombok.Getter;
 import xyz.e3ndr.fastloggingframework.logging.FastLogger;
 
 public class KawaNetwork {
     private static final Set<Class<?>> classes = new HashSet<>();
+
+    @Getter
+    private static volatile int numberOfClients = 0;
 
     static {
         classes.addAll(
@@ -38,6 +42,11 @@ public class KawaNetwork {
     public static Listener listenKryo(String password) {
         return new Listener() {
             private Map<Connection, NetworkConnection> connMap = new HashMap<>();
+
+            @Override
+            public void connected(Connection conn) {
+                numberOfClients++;
+            }
 
             @Override
             public void received(Connection conn, Object message) {
@@ -73,6 +82,8 @@ public class KawaNetwork {
 
             @Override
             public void disconnected(Connection conn) {
+                numberOfClients--;
+
                 NetworkConnection nw = this.connMap.remove(conn);
                 if (nw == null) return;
 

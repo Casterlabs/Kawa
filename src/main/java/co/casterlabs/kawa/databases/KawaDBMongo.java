@@ -15,6 +15,7 @@ import com.mongodb.MongoClientURI;
 
 import co.casterlabs.commons.async.AsyncTask;
 import co.casterlabs.kawa.Kawa;
+import co.casterlabs.kawa.networking.KawaNetwork;
 import lombok.NonNull;
 
 public class KawaDBMongo implements KawaDB {
@@ -28,6 +29,7 @@ public class KawaDBMongo implements KawaDB {
         this.jongo = new Jongo(this.mongo.getDB("kawa"));
     }
 
+    @Override
     public List<String> findResource(String resourceId) {
         try (MongoCursor<ResourceOffer> cursor = this.jongo.getCollection("resources")
             .find("{ resourceId: # }", resourceId)
@@ -47,6 +49,7 @@ public class KawaDBMongo implements KawaDB {
         }
     }
 
+    @Override
     public void offerResource(String resourceId) {
         assert !Kawa.isClientOnlyMode() : "Clients cannot offer resources.";
         assert !this.resourceKA.containsKey(resourceId) : "Duplicate resource for this instance.";
@@ -54,12 +57,19 @@ public class KawaDBMongo implements KawaDB {
         this.resourceKA.put(
             resourceId,
             AsyncTask.create(() -> {
+                ResourceOffer offer = new ResourceOffer();
+                offer.resourceId = resourceId;
+                offer.address = Kawa.getThisAddress();
+
                 while (true) {
+                    offer.numberOfClients = KawaNetwork.getNumberOfClients();
+                    offer.offeredAt = System.currentTimeMillis();
+
                     this.jongo
                         .getCollection("resources")
                         .update("{ resourceId: #, address: # }", resourceId, Kawa.getThisAddress())
                         .upsert()
-                        .with("{ offeredAt: # }", System.currentTimeMillis());
+                        .with(offer);
 
                     try {
                         Thread.sleep(OFFER_TIMEOUT / 2);
@@ -71,6 +81,7 @@ public class KawaDBMongo implements KawaDB {
         );
     }
 
+    @Override
     public void unofferResource(String resourceId) {
         AsyncTask ka = this.resourceKA.remove(resourceId);
         if (ka != null) ka.cancel();
