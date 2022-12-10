@@ -31,16 +31,25 @@ public class Kawa {
     public static void startListening(String thisAddress) throws IOException {
         assert password != null : "You must set the password before listening.";
         Kawa.thisAddress = thisAddress;
-
         KawaNetwork.startServer(thisAddress, password, resourceProviders);
     }
 
-    public Line getResource(String resourceId, Line.Listener listener) {
+    public Line getResource(String resourceId, Line.Listener listener, boolean tryNextIfFailed) throws IOException {
         List<ResourceOffer> offers = ResourceOffer.sort(db.findResource(resourceId));
 
-        // TODO
+        IOException exception = new IOException("No offers.");
 
-        return null;
+        for (ResourceOffer offer : offers) {
+            try {
+                return KawaNetwork.openLine(offer.address, password, resourceId, listener);
+            } catch (IOException e) {
+                exception.addSuppressed(e);
+
+                if (!tryNextIfFailed) break;
+            }
+        }
+
+        throw exception;
     }
 
     public void offerResource(String resourceId, KawaResource resourceProvider) {
