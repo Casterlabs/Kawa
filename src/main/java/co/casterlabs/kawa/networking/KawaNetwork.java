@@ -233,6 +233,9 @@ public class KawaNetwork {
                     ackPromise.then((_unused) -> {
                         line.listener.onOpen(line);
                     });
+                    ackPromise.except((_unused) -> {
+                        line.close();
+                    });
 
                     nw.send(new PacketLineOpened(packet.nonce, line.id)); // Notify client of acceptance.
                     return;
