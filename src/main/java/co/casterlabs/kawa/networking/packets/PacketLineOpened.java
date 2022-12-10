@@ -6,5 +6,6 @@ import lombok.AllArgsConstructor;
 @KryoSerializable
 @AllArgsConstructor
 public class PacketLineOpened {
+    public String nonce;
     public String lineId;
 }
