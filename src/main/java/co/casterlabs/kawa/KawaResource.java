@@ -11,6 +11,6 @@ public interface KawaResource {
         return true;
     }
 
-    public void accept(String resourceId, Line line);
+    public Line.Listener accept(String resourceId);
 
 }

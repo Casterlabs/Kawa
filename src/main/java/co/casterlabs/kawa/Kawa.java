@@ -35,7 +35,7 @@ public class Kawa {
         KawaNetwork.startServer(thisAddress, password, resourceProviders);
     }
 
-    public Line getResource(String resourceId) {
+    public Line getResource(String resourceId, Line.Listener listener) {
         List<ResourceOffer> offers = ResourceOffer.sort(db.findResource(resourceId));
 
         // TODO

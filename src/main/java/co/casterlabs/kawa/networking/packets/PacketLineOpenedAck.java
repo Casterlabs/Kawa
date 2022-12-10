@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 
 @KryoSerializable
 @AllArgsConstructor
-public class PacketLineOpenRejected {
+public class PacketLineOpenedAck {
     public String nonce;
+    public String lineId;
 }

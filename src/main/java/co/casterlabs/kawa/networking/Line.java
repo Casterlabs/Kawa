@@ -10,6 +10,7 @@ import co.casterlabs.kawa.networking.packets.PacketLineByteMessage;
 import co.casterlabs.kawa.networking.packets.PacketLineClose;
 import co.casterlabs.kawa.networking.packets.PacketLineObjectMessage;
 import lombok.Getter;
+import lombok.NonNull;
 
 public class Line {
     static final Map<String, WeakReference<Line>> instances = new HashMap<>();
@@ -17,18 +18,18 @@ public class Line {
 
     public final String id;
     public final NetworkConnection conn;
-    public final ActiveLineListener listener;
+    public final Listener listener;
 
     @Getter
     boolean isOpen = true;
 
-    Line(String id, NetworkConnection conn, ActiveLineListener listener) {
+    Line(String id, NetworkConnection conn, @NonNull Listener listener) {
         this.id = id;
         this.conn = conn;
         this.listener = listener;
     }
 
-    Line(NetworkConnection conn, ActiveLineListener listener) {
+    Line(NetworkConnection conn, @NonNull Listener listener) {
         this(UUID.randomUUID().toString(), conn, listener);
     }
 
@@ -55,7 +56,9 @@ public class Line {
         this.conn.handleClose(this, false);
     }
 
-    public interface ActiveLineListener {
+    public static interface Listener {
+
+        default void onOpen(Line line) {}
 
         default void handleMessage(int type, byte[] trueMessage) {}
 

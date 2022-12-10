@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 import org.reflections8.Reflections;
@@ -16,21 +17,27 @@ import com.esotericsoftware.kryonet.Connection;
 import com.esotericsoftware.kryonet.Listener;
 import com.esotericsoftware.kryonet.Server;
 
+import co.casterlabs.commons.async.AsyncTask;
 import co.casterlabs.commons.async.PromiseWithHandles;
 import co.casterlabs.kawa.KawaResource;
 import co.casterlabs.kawa.networking.packets.PacketAuthenticateHandshake;
 import co.casterlabs.kawa.networking.packets.PacketAuthenticateSuccess;
+import co.casterlabs.kawa.networking.packets.PacketLineOpenRejected;
+import co.casterlabs.kawa.networking.packets.PacketLineOpenRequest;
+import co.casterlabs.kawa.networking.packets.PacketLineOpened;
+import co.casterlabs.kawa.networking.packets.PacketLineOpenedAck;
 import lombok.Getter;
 import xyz.e3ndr.fastloggingframework.logging.FastLogger;
 
 public class KawaNetwork {
     public static final int KAWA_PORT = 32977;
 
-    private static final Map<String, NetworkConnection> clientConnections = new HashMap<>();
-    private static final Set<Class<?>> classes = new HashSet<>();
-
     @Getter
     private static volatile int numberOfClients = 0;
+
+    private static final Set<Class<?>> classes = new HashSet<>();
+
+    private static final Map<String, NetworkConnection> clientConnections = new HashMap<>();
 
     static {
         classes.addAll(
@@ -52,10 +59,34 @@ public class KawaNetwork {
     /**
      * @throws null if the open failed/was rejected.
      */
-    public static synchronized Line openLine(String address, String password, String resourceId) throws IOException {
+    public static synchronized Line openLine(String address, String password, String resourceId, Line.Listener listener) throws IOException {
         NetworkConnection nw = connectToServer(address, password);
+        String nonce = UUID.randomUUID().toString();
 
-        return null;
+        // Register a promise which we'll use to wait for the value.
+        PromiseWithHandles<String> openPromise = new PromiseWithHandles<>();
+        nw.lineOpenPromises.put(nonce, openPromise);
+
+        // Ask for a line to the resource.
+        nw.send(new PacketLineOpenRequest(nonce, resourceId));
+
+        // Wait for either the line or a rejection.
+        String lineId;
+
+        try {
+            lineId = openPromise.await();
+        } catch (Throwable t) {
+            throw (IOException) t;
+        }
+
+        Line line = new Line(lineId, nw, listener);
+
+        // Tell the server that we've allocated the resources and are now ready.
+        nw.send(new PacketLineOpenedAck(nonce, resourceId));
+
+        // We're open!
+        line.listener.onOpen(line);
+        return line;
     }
 
     private static synchronized NetworkConnection connectToServer(String address, String password) throws IOException {
@@ -101,7 +132,12 @@ public class KawaNetwork {
                 @Override
                 public void disconnected(Connection conn) {
                     if (this.hasCompletedHandshake) {
-                        clientConnections.remove(address);
+                        NetworkConnection nw = clientConnections.remove(address);
+                        if (nw == null) return;
+
+                        nw.lineOpenPromises
+                            .values()
+                            .forEach((p) -> p.reject(new IOException("Connection was closed.")));
                     } else {
                         handshakePromise.reject(new IOException("Disconnected during handshake."));
                     }
@@ -158,6 +194,43 @@ public class KawaNetwork {
                 if (nw == null) {
                     FastLogger.logStatic("Client (%s) failed auth, disconnecting.", conn.getRemoteAddressTCP());
                     conn.close();
+                    return;
+                }
+
+                if (message instanceof PacketLineOpenRequest) {
+                    PacketLineOpenRequest packet = (PacketLineOpenRequest) message;
+
+                    KawaResource resourceProvider = resourceProviders.get(packet.resourceId);
+
+                    // If no provider OR not acceptable, reject.
+                    if ((resourceProvider == null) || !resourceProvider.canAccept(packet.resourceId)) {
+                        nw.send(new PacketLineOpenRejected(packet.nonce));
+                        return;
+                    }
+
+                    // Register our connect promise.
+                    PromiseWithHandles<String> ackPromise = new PromiseWithHandles<>();
+                    nw.lineOpenPromises.put(packet.nonce, ackPromise);
+
+                    AsyncTask.create(() -> {
+                        try {
+                            TimeUnit.SECONDS.sleep(2);
+                        } catch (InterruptedException e) {}
+
+                        if (ackPromise.hasCompleted()) return;
+
+                        // We timed out, reject.
+                        nw.send(new PacketLineOpenRejected(packet.nonce));
+                        nw.lineOpenPromises.remove(packet.nonce);
+                    });
+
+                    // Accept the request.
+                    Line line = new Line(nw, resourceProvider.accept(packet.resourceId));
+                    ackPromise.then((_unused) -> {
+                        line.listener.onOpen(line);
+                    });
+
+                    nw.send(new PacketLineOpened(packet.nonce, line.id)); // Notify client of acceptance.
                     return;
                 }
 
