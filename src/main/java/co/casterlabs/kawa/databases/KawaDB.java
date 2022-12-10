@@ -10,7 +10,7 @@ public interface KawaDB extends Closeable {
     /**
      * @return A list of addresses, pick one to connect to. Empty = no offers.
      */
-    public List<String> findResource(String resourceId);
+    public List<ResourceOffer> findResource(String resourceId);
 
     public void offerResource(String resourceId);
 

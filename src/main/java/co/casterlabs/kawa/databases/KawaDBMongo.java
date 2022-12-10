@@ -6,6 +6,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.jongo.Jongo;
 import org.jongo.MongoCursor;
@@ -30,20 +31,24 @@ public class KawaDBMongo implements KawaDB {
     }
 
     @Override
-    public List<String> findResource(String resourceId) {
+    public List<ResourceOffer> findResource(String resourceId) {
         try (MongoCursor<ResourceOffer> cursor = this.jongo.getCollection("resources")
             .find("{ resourceId: # }", resourceId)
             .as(ResourceOffer.class)) {
-            ArrayList<String> addresses = new ArrayList<>(cursor.count());
+            List<ResourceOffer> addresses = new ArrayList<>(cursor.count());
 
             while (cursor.hasNext()) {
                 ResourceOffer offer = cursor.next();
                 if (offer.isExpired()) continue;
 
-                addresses.add(offer.address);
+                addresses.add(offer);
             }
 
-            return addresses;
+            return addresses
+                .stream()
+                // Prioritize the least amount of load.
+                .sorted((c1, c2) -> Integer.compare(c1.numberOfClients, c2.numberOfClients))
+                .collect(Collectors.toList());
         } catch (IOException e) {
             return Collections.emptyList();
         }
