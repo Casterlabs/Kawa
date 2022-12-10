@@ -32,7 +32,7 @@ public class Kawa {
         assert password != null : "You must set the password before listening.";
         Kawa.thisAddress = thisAddress;
 
-        KawaNetwork.startServer(thisAddress, password);
+        KawaNetwork.startServer(thisAddress, password, resourceProviders);
     }
 
     public Line getResource(String resourceId) {

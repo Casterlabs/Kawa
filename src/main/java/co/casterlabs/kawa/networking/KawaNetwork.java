@@ -17,6 +17,7 @@ import com.esotericsoftware.kryonet.Listener;
 import com.esotericsoftware.kryonet.Server;
 
 import co.casterlabs.commons.async.PromiseWithHandles;
+import co.casterlabs.kawa.KawaResource;
 import co.casterlabs.kawa.networking.packets.PacketAuthenticateHandshake;
 import co.casterlabs.kawa.networking.packets.PacketAuthenticateSuccess;
 import lombok.Getter;
@@ -115,7 +116,7 @@ public class KawaNetwork {
         }
     }
 
-    public static void startServer(String thisAddress, String password) throws IOException {
+    public static void startServer(String thisAddress, String password, Map<String, KawaResource> resourceProviders) throws IOException {
         Server server = new Server();
         KawaNetwork.setupKryo(server.getKryo());
         server.addListener(new Listener() {
