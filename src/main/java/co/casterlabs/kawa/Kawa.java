@@ -1,7 +1,9 @@
 package co.casterlabs.kawa;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.jetbrains.annotations.Nullable;
 
@@ -19,6 +21,8 @@ public class Kawa {
 
     // Note that maxClients isn't actually enforced, this is intentional.
     private static @Setter @Getter int maxNumberOfClients = Integer.MAX_VALUE;
+
+    private static final Map<String, KawaResource> resourceProviders = new HashMap<>();
 
     static {
         Kawa.class.getClassLoader().setDefaultAssertionStatus(true);
@@ -39,12 +43,14 @@ public class Kawa {
         return null;
     }
 
-    public void offerResource(String resourceId) {
+    public void offerResource(String resourceId, KawaResource resourceProvider) {
         assert !Kawa.isClientOnlyMode() : "Clients cannot offer resources.";
         db.offerResource(resourceId);
+        resourceProviders.put(resourceId, resourceProvider);
     }
 
     public void unofferResource(String resourceId) {
+        resourceProviders.remove(resourceId);
         db.unofferResource(resourceId);
     }
 
