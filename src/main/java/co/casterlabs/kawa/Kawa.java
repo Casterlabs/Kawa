@@ -36,7 +36,6 @@ public class Kawa {
 
     public Line getResource(String resourceId, Line.Listener listener, boolean tryNextIfFailed) throws IOException {
         List<ResourceOffer> offers = ResourceOffer.sort(db.findResource(resourceId));
-
         IOException exception = new IOException("No offers.");
 
         for (ResourceOffer offer : offers) {
@@ -48,7 +47,6 @@ public class Kawa {
                 if (!tryNextIfFailed) break;
             }
         }
-
         throw exception;
     }
 
