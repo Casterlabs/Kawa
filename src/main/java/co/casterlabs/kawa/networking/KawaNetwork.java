@@ -49,7 +49,16 @@ public class KawaNetwork {
         }
     }
 
-    public static synchronized NetworkConnection openLine(String address, String password) throws IOException {
+    /**
+     * @throws null if the open failed/was rejected.
+     */
+    public static synchronized Line openLine(String address, String password, String resourceId) throws IOException {
+        NetworkConnection nw = connectToServer(address, password);
+
+        return null;
+    }
+
+    private static synchronized NetworkConnection connectToServer(String address, String password) throws IOException {
         NetworkConnection nw_cached = clientConnections.get(address);
 
         if (nw_cached == null) {
