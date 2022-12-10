@@ -1,9 +1,9 @@
 package co.casterlabs.kawa;
 
-import co.casterlabs.kawa.networking.ActiveLine;
+import co.casterlabs.kawa.networking.Line;
 
 public interface KawaResource {
 
-    public void accept(String resourceId, ActiveLine line);
+    public void accept(String resourceId, Line line);
 
 }

@@ -1,10 +1,5 @@
 package co.casterlabs.kawa.networking;
 
-import static java.lang.annotation.ElementType.TYPE;
-import static java.lang.annotation.RetentionPolicy.RUNTIME;
-
-import java.lang.annotation.Retention;
-import java.lang.annotation.Target;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -17,7 +12,7 @@ import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryonet.Connection;
 import com.esotericsoftware.kryonet.Listener;
 
-import lombok.AllArgsConstructor;
+import co.casterlabs.kawa.networking.packets.PacketAuthenticateHandshake;
 import xyz.e3ndr.fastloggingframework.logging.FastLogger;
 
 public class KawaNetwork {
@@ -46,8 +41,8 @@ public class KawaNetwork {
 
             @Override
             public void received(Connection conn, Object message) {
-                if (message instanceof AuthenticateHandshakeMessage) {
-                    AuthenticateHandshakeMessage auth = (AuthenticateHandshakeMessage) message;
+                if (message instanceof PacketAuthenticateHandshake) {
+                    PacketAuthenticateHandshake auth = (PacketAuthenticateHandshake) message;
                     if (auth.password.equals(password)) {
                         // Connected.
                         this.connMap.put(conn, new NetworkConnection() {
@@ -82,21 +77,10 @@ public class KawaNetwork {
                 if (nw == null) return;
 
                 new ArrayList<>(nw.lines)
-                    .forEach(nw::handleClose);
+                    .forEach((l) -> nw.handleClose(l, true));
             }
 
         };
-    }
-
-    @Retention(RUNTIME)
-    @Target(TYPE)
-    public static @interface KryoSerializable {
-    }
-
-    @KryoSerializable
-    @AllArgsConstructor
-    public static class AuthenticateHandshakeMessage {
-        public String password;
     }
 
 }
