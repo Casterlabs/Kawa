@@ -9,12 +9,12 @@ import co.casterlabs.kawa.networking.packets.PacketLineClose;
 import co.casterlabs.kawa.networking.packets.PacketLineObjectMessage;
 
 abstract class NetworkConnection {
-    final List<Line> lines = new LinkedList<>();
+    final List<Line> activeLines = new LinkedList<>();
 
     abstract void send(Object message);
 
     protected void handleClose(Line line, boolean isNetworkDisconnect) {
-        this.lines.remove(line);
+        this.activeLines.remove(line);
         line.isOpen = false;
         line.listener.onClose(isNetworkDisconnect);
     }

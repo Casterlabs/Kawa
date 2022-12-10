@@ -76,7 +76,7 @@ public class KawaNetwork {
                 NetworkConnection nw = this.connMap.remove(conn);
                 if (nw == null) return;
 
-                new ArrayList<>(nw.lines)
+                new ArrayList<>(nw.activeLines)
                     .forEach((l) -> nw.handleClose(l, true));
             }
 
