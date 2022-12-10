@@ -201,9 +201,13 @@ public class KawaNetwork {
                     PacketLineOpenRequest packet = (PacketLineOpenRequest) message;
 
                     KawaResource resourceProvider = resourceProviders.get(packet.resourceId);
+                    if (resourceProvider == null) {
+                        nw.send(new PacketLineOpenRejected(packet.nonce));
+                        return;
+                    }
 
-                    // If no provider OR not acceptable, reject.
-                    if ((resourceProvider == null) || !resourceProvider.canAccept(packet.resourceId)) {
+                    Line.Listener lineListener = resourceProvider.accept(packet.resourceId);
+                    if (lineListener == null) {
                         nw.send(new PacketLineOpenRejected(packet.nonce));
                         return;
                     }
@@ -225,7 +229,7 @@ public class KawaNetwork {
                     });
 
                     // Accept the request.
-                    Line line = new Line(nw, resourceProvider.accept(packet.resourceId));
+                    Line line = new Line(nw, lineListener);
                     ackPromise.then((_unused) -> {
                         line.listener.onOpen(line);
                     });

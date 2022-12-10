@@ -1,5 +1,7 @@
 package co.casterlabs.kawa;
 
+import org.jetbrains.annotations.Nullable;
+
 import co.casterlabs.kawa.networking.Line;
 
 public interface KawaResource {
@@ -7,10 +9,6 @@ public interface KawaResource {
     /**
      * @return false if not accepted.
      */
-    default boolean canAccept(String resourceId) {
-        return true;
-    }
-
-    public Line.Listener accept(String resourceId);
+    public @Nullable Line.Listener accept(String resourceId);
 
 }
