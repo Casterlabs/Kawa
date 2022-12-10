@@ -49,17 +49,19 @@ abstract class NetworkConnection {
 
         if (message instanceof PacketLineOpened) {
             PacketLineOpened packet = (PacketLineOpened) message;
-            this.lineOpenPromises
-                .remove(packet.nonce)
-                .resolve(packet.lineId);
+            PromiseWithHandles<String> promise = this.lineOpenPromises.remove(packet.nonce);
+            if (promise != null) {
+                promise.resolve(packet.lineId);
+            }
             return;
         }
 
         if (message instanceof PacketLineOpenRejected) {
             PacketLineOpenRejected packet = (PacketLineOpenRejected) message;
-            this.lineOpenPromises
-                .remove(packet.nonce)
-                .reject(new IOException("Rejected."));
+            PromiseWithHandles<String> promise = this.lineOpenPromises.remove(packet.nonce);
+            if (promise != null) {
+                promise.reject(new IOException("Rejected."));
+            }
             return;
         }
 
@@ -73,9 +75,10 @@ abstract class NetworkConnection {
 
         if (message instanceof PacketLineOpenedAck) {
             PacketLineOpenedAck packet = (PacketLineOpenedAck) message;
-            this.lineOpenPromises
-                .remove(packet.nonce)
-                .resolve(packet.lineId);
+            PromiseWithHandles<String> promise = this.lineOpenPromises.remove(packet.nonce);
+            if (promise != null) {
+                promise.resolve(packet.lineId);
+            }
             return;
         }
 
