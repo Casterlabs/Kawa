@@ -18,8 +18,8 @@ public interface Packet {
         LINE_OPENED_ACK       (PacketLineOpenedAck.class),
         LINE_CLOSE            (PacketLineClose.class),
         
-        LINE_BYTE_MESSAGE     (PacketLineByteMessage.class),
-        LINE_OBJECT_MESSAGE   (PacketLineObjectMessage.class),
+        LINE_MESSAGE_BYTE     (PacketLineMessageByte.class),
+        LINE_MESSAGE_OBJECT   (PacketLineMessageObject.class),
         
         // @formatter:on
         ;

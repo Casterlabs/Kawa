@@ -9,9 +9,9 @@ import java.util.Map;
 
 import co.casterlabs.commons.async.PromiseWithHandles;
 import co.casterlabs.kawa.networking.packets.Packet;
-import co.casterlabs.kawa.networking.packets.PacketLineByteMessage;
+import co.casterlabs.kawa.networking.packets.PacketLineMessageByte;
 import co.casterlabs.kawa.networking.packets.PacketLineClose;
-import co.casterlabs.kawa.networking.packets.PacketLineObjectMessage;
+import co.casterlabs.kawa.networking.packets.PacketLineMessageObject;
 import co.casterlabs.kawa.networking.packets.PacketLineOpenRejected;
 import co.casterlabs.kawa.networking.packets.PacketLineOpened;
 import co.casterlabs.kawa.networking.packets.PacketLineOpenedAck;
@@ -109,8 +109,8 @@ abstract class NetworkConnection {
                 return;
             }
 
-            case LINE_BYTE_MESSAGE: {
-                PacketLineByteMessage packet = (PacketLineByteMessage) rawPacket;
+            case LINE_MESSAGE_BYTE: {
+                PacketLineMessageByte packet = (PacketLineMessageByte) rawPacket;
 
                 WeakReference<Line> $ref = Line.instances.get(packet.lineId);
                 if ($ref != null) {
@@ -122,8 +122,8 @@ abstract class NetworkConnection {
                 return;
             }
 
-            case LINE_OBJECT_MESSAGE: {
-                PacketLineObjectMessage packet = (PacketLineObjectMessage) rawPacket;
+            case LINE_MESSAGE_OBJECT: {
+                PacketLineMessageObject packet = (PacketLineMessageObject) rawPacket;
 
                 WeakReference<Line> $ref = Line.instances.get(packet.lineId);
                 if ($ref != null) {

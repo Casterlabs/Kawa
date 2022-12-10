@@ -6,9 +6,9 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
-import co.casterlabs.kawa.networking.packets.PacketLineByteMessage;
+import co.casterlabs.kawa.networking.packets.PacketLineMessageByte;
 import co.casterlabs.kawa.networking.packets.PacketLineClose;
-import co.casterlabs.kawa.networking.packets.PacketLineObjectMessage;
+import co.casterlabs.kawa.networking.packets.PacketLineMessageObject;
 import lombok.Getter;
 import lombok.NonNull;
 
@@ -43,12 +43,12 @@ public class Line {
 
     public void sendMessage(Object message) throws IOException {
         assert this.isOpen : "Line is closed.";
-        this.conn.send(new PacketLineObjectMessage(this.id, message));
+        this.conn.send(new PacketLineMessageObject(this.id, message));
     }
 
     public void sendMessage(byte type, byte[] message) throws IOException {
         assert this.isOpen : "Line is closed.";
-        this.conn.send(new PacketLineByteMessage(this.id, type, message));
+        this.conn.send(new PacketLineMessageByte(this.id, type, message));
     }
 
     public void close() {
