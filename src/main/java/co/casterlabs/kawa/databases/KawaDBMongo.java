@@ -6,7 +6,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 import org.jongo.Jongo;
 import org.jongo.MongoCursor;
@@ -35,20 +34,16 @@ public class KawaDBMongo implements KawaDB {
         try (MongoCursor<ResourceOffer> cursor = this.jongo.getCollection("resources")
             .find("{ resourceId: # }", resourceId)
             .as(ResourceOffer.class)) {
-            List<ResourceOffer> addresses = new ArrayList<>(cursor.count());
+            List<ResourceOffer> offers = new ArrayList<>(cursor.count());
 
             while (cursor.hasNext()) {
                 ResourceOffer offer = cursor.next();
                 if (offer.isExpired()) continue;
 
-                addresses.add(offer);
+                offers.add(offer);
             }
 
-            return addresses
-                .stream()
-                // Prioritize the least amount of load.
-                .sorted((c1, c2) -> Integer.compare(c1.numberOfClients, c2.numberOfClients))
-                .collect(Collectors.toList());
+            return offers;
         } catch (IOException e) {
             return Collections.emptyList();
         }
@@ -69,6 +64,7 @@ public class KawaDBMongo implements KawaDB {
                 while (true) {
                     offer.numberOfClients = KawaNetwork.getNumberOfClients();
                     offer.offeredAt = System.currentTimeMillis();
+                    offer.isSaturated = offer.numberOfClients > Kawa.getMaxNumberOfClients();
 
                     this.jongo
                         .getCollection("resources")
