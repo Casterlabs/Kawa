@@ -1,10 +1,14 @@
 package co.casterlabs.kawa.networking.packets;
 
-import co.casterlabs.kawa.networking.KryoSerializable;
 import lombok.AllArgsConstructor;
 
-@KryoSerializable
 @AllArgsConstructor
-public class PacketLineClose {
+public class PacketLineClose implements Packet {
     public String lineId;
+
+    @Override
+    public Type getType() {
+        return Type.LINE_CLOSE;
+    }
+
 }

@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 
 import co.casterlabs.commons.async.PromiseWithHandles;
+import co.casterlabs.kawa.networking.packets.Packet;
 import co.casterlabs.kawa.networking.packets.PacketLineByteMessage;
 import co.casterlabs.kawa.networking.packets.PacketLineClose;
 import co.casterlabs.kawa.networking.packets.PacketLineObjectMessage;
@@ -23,7 +24,7 @@ abstract class NetworkConnection {
     // All rejects are IOExceptions.
     final Map<String, PromiseWithHandles<String>> lineOpenPromises = new HashMap<>();
 
-    abstract void send(Object message);
+    abstract void send(Packet packet);
 
     void onEmptyLines() {
         // Override as needed.
@@ -42,7 +43,7 @@ abstract class NetworkConnection {
     /**
      * @return true if the message was handled. false if you should handle it.
      */
-    public void handleMessage(Object message) {
+    public void handleMessage(Packet message) {
         // ------------------------
         // Client side
         // ------------------------

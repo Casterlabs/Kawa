@@ -3,13 +3,9 @@ package co.casterlabs.kawa.networking;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
-
-import org.reflections8.Reflections;
 
 import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryonet.Client;
@@ -20,6 +16,7 @@ import com.esotericsoftware.kryonet.Server;
 import co.casterlabs.commons.async.AsyncTask;
 import co.casterlabs.commons.async.PromiseWithHandles;
 import co.casterlabs.kawa.KawaResource;
+import co.casterlabs.kawa.networking.packets.Packet;
 import co.casterlabs.kawa.networking.packets.PacketAuthenticateHandshake;
 import co.casterlabs.kawa.networking.packets.PacketAuthenticateSuccess;
 import co.casterlabs.kawa.networking.packets.PacketLineOpenRejected;
@@ -35,24 +32,14 @@ public class KawaNetwork {
     @Getter
     private static volatile int numberOfClients = 0;
 
-    private static final Set<Class<?>> classes = new HashSet<>();
-
     private static final Map<String, NetworkConnection> clientConnections = new HashMap<>();
-
-    static {
-        classes.addAll(
-            new Reflections()
-                .getTypesAnnotatedWith(KryoSerializable.class)
-        );
-        System.gc(); // Free memory, Reflections is HEAVY.
-    }
 
     public static void setupKryo(Kryo kryo) {
         // We use the hashCode as the unique ID. Kryo internally uses 0-8 for other
         // things so we must also make sure we don't accidentally override those.
-        for (Class<?> clazz : classes) {
-            int id = (clazz.hashCode() & 0x7fffffff /*abs*/) + 10;
-            kryo.register(clazz, id);
+        for (Packet.Type type : Packet.Type.values()) {
+            int id = (type.clazz.hashCode() & 0x7fffffff /*abs*/) + 10;
+            kryo.register(type.clazz, id);
         }
     }
 
@@ -99,8 +86,8 @@ public class KawaNetwork {
             PromiseWithHandles<Void> handshakePromise = new PromiseWithHandles<>();
             NetworkConnection nw = new NetworkConnection() {
                 @Override
-                void send(Object message) {
-                    client.sendTCP(message);
+                void send(Packet packet) {
+                    client.sendTCP(packet);
                 }
 
                 @Override
@@ -126,7 +113,7 @@ public class KawaNetwork {
                         return;
                     }
 
-                    nw.handleMessage(message);
+                    nw.handleMessage((Packet) message);
                 }
 
                 @Override
@@ -180,8 +167,8 @@ public class KawaNetwork {
                         // Connected.
                         this.connMap.put(conn, new NetworkConnection() {
                             @Override
-                            void send(Object message) {
-                                conn.sendTCP(message); // TODO UDP?
+                            void send(Packet packet) {
+                                conn.sendTCP(packet); // TODO UDP?
                             }
                         });
                         conn.sendTCP(new PacketAuthenticateSuccess());
@@ -241,7 +228,7 @@ public class KawaNetwork {
                     return;
                 }
 
-                nw.handleMessage(message);
+                nw.handleMessage((Packet) message);
             }
 
             @Override

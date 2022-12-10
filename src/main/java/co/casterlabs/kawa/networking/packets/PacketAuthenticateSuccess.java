@@ -1,7 +1,10 @@
 package co.casterlabs.kawa.networking.packets;
 
-import co.casterlabs.kawa.networking.KryoSerializable;
+public class PacketAuthenticateSuccess implements Packet {
 
-@KryoSerializable
-public class PacketAuthenticateSuccess {
+    @Override
+    public Type getType() {
+        return Type.AUTHENTICATE_SUCCESS;
+    }
+
 }

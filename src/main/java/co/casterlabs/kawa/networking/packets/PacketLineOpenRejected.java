@@ -1,10 +1,14 @@
 package co.casterlabs.kawa.networking.packets;
 
-import co.casterlabs.kawa.networking.KryoSerializable;
 import lombok.AllArgsConstructor;
 
-@KryoSerializable
 @AllArgsConstructor
-public class PacketLineOpenRejected {
+public class PacketLineOpenRejected implements Packet {
     public String nonce;
+
+    @Override
+    public Type getType() {
+        return Type.LINE_OPEN_REJECTED;
+    }
+
 }
