@@ -143,6 +143,7 @@ public class KawaNetwork {
                                 conn.sendTCP(message); // TODO UDP?
                             }
                         });
+                        conn.sendTCP(new PacketAuthenticateSuccess());
                         return;
                     }
                     // Fallthrough.
