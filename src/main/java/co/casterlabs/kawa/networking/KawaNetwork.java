@@ -85,12 +85,7 @@ public class KawaNetwork {
                         return;
                     }
 
-                    if (nw.handleMessage(message)) {
-                        return; // Already handled.
-                    }
-
-                    // TODO line/resource handshaking.
-                    FastLogger.logStatic("Unknown message: %s", message);
+                    nw.handleMessage(message);
                 }
 
                 @Override
@@ -156,12 +151,7 @@ public class KawaNetwork {
                     return;
                 }
 
-                if (nw.handleMessage(message)) {
-                    return; // Already handled.
-                }
-
-                // TODO line/resource handshaking.
-                FastLogger.logStatic("Unknown message: %s", message);
+                nw.handleMessage(message);
             }
 
             @Override

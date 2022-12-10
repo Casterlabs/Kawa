@@ -7,6 +7,7 @@ import java.util.List;
 import co.casterlabs.kawa.networking.packets.PacketLineByteMessage;
 import co.casterlabs.kawa.networking.packets.PacketLineClose;
 import co.casterlabs.kawa.networking.packets.PacketLineObjectMessage;
+import xyz.e3ndr.fastloggingframework.logging.FastLogger;
 
 abstract class NetworkConnection {
     final List<Line> activeLines = new LinkedList<>();
@@ -30,7 +31,7 @@ abstract class NetworkConnection {
     /**
      * @return true if the message was handled. false if you should handle it.
      */
-    public boolean handleMessage(Object message) {
+    public void handleMessage(Object message) {
         if (message instanceof PacketLineClose) {
             PacketLineClose packet = (PacketLineClose) message;
 
@@ -41,8 +42,7 @@ abstract class NetworkConnection {
                     handleClose(line, false);
                 }
             }
-
-            return true;
+            return;
         }
 
         if (message instanceof PacketLineByteMessage) {
@@ -55,8 +55,7 @@ abstract class NetworkConnection {
                     line.listener.handleMessage(packet.type, packet.message);
                 }
             }
-
-            return true;
+            return;
         }
 
         if (message instanceof PacketLineObjectMessage) {
@@ -69,11 +68,11 @@ abstract class NetworkConnection {
                     line.listener.handleMessage(packet.message);
                 }
             }
-
-            return true;
+            return;
         }
 
-        return false;
+        // TODO line/resource handshaking.
+        FastLogger.logStatic("Unknown message: %s", message);
     }
 
 }
