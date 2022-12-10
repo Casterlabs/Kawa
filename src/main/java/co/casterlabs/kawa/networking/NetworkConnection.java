@@ -13,8 +13,16 @@ abstract class NetworkConnection {
 
     abstract void send(Object message);
 
+    void onEmptyLines() {
+        // Override as needed.
+    }
+
     protected void handleClose(Line line, boolean isNetworkDisconnect) {
         this.activeLines.remove(line);
+        if (this.activeLines.isEmpty()) {
+            this.onEmptyLines();
+        }
+
         line.isOpen = false;
         line.listener.onClose(isNetworkDisconnect);
     }
