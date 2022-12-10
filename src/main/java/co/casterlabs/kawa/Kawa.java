@@ -2,7 +2,6 @@ package co.casterlabs.kawa;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.jetbrains.annotations.Nullable;
 
@@ -40,12 +39,7 @@ public class Kawa {
     }
 
     public Line getResource(String resourceId) {
-        List<ResourceOffer> offers = db.findResource(resourceId)
-            .stream()
-            // Prioritize the least amount of load.
-            .sorted((o1, o2) -> Integer.compare(o1.numberOfClients, o2.numberOfClients))
-            .sorted((o1, o2) -> Boolean.compare(!o1.isSaturated, !o2.isSaturated))
-            .collect(Collectors.toList());
+        List<ResourceOffer> offers = ResourceOffer.sort(db.findResource(resourceId));
 
         // TODO
 
