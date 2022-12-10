@@ -16,16 +16,4 @@ public interface KawaDB extends Closeable {
 
     public void unofferResource(String resourceId);
 
-    public static class ResourceOffer {
-        public String resourceId;
-        public String address;
-        public long offeredAt;
-        public int numberOfClients;
-
-        public boolean isExpired() {
-            return (System.currentTimeMillis() - this.offeredAt) > OFFER_TIMEOUT;
-        }
-
-    }
-
 }
