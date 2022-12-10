@@ -15,7 +15,6 @@ import co.casterlabs.kawa.networking.packets.PacketLineObjectMessage;
 import co.casterlabs.kawa.networking.packets.PacketLineOpenRejected;
 import co.casterlabs.kawa.networking.packets.PacketLineOpened;
 import co.casterlabs.kawa.networking.packets.PacketLineOpenedAck;
-import xyz.e3ndr.fastloggingframework.logging.FastLogger;
 
 abstract class NetworkConnection {
     final List<Line> activeLines = new LinkedList<>();
@@ -43,90 +42,99 @@ abstract class NetworkConnection {
     /**
      * @return true if the message was handled. false if you should handle it.
      */
-    public void handleMessage(Packet message) {
-        // ------------------------
-        // Client side
-        // ------------------------
+    public void handleMessage(Packet rawPacket) {
 
-        if (message instanceof PacketLineOpened) {
-            PacketLineOpened packet = (PacketLineOpened) message;
-            PromiseWithHandles<String> promise = this.lineOpenPromises.remove(packet.nonce);
-            if (promise != null) {
-                promise.resolve(packet.lineId);
+        switch (rawPacket.getType()) {
+            // ------------------------
+            // Client side
+            // ------------------------
+
+            case AUTHENTICATE_SUCCESS: {
+                return; // Handled in KawaNetwork.
             }
-            return;
-        }
 
-        if (message instanceof PacketLineOpenRejected) {
-            PacketLineOpenRejected packet = (PacketLineOpenRejected) message;
-            PromiseWithHandles<String> promise = this.lineOpenPromises.remove(packet.nonce);
-            if (promise != null) {
-                promise.reject(new IOException("Rejected."));
-            }
-            return;
-        }
-
-        // ------------------------
-        // Server side
-        // ------------------------
-
-        // Handled in KawaNetwork.
-//        if (message instanceof PacketLineOpenRequest) {
-//        }
-
-        if (message instanceof PacketLineOpenedAck) {
-            PacketLineOpenedAck packet = (PacketLineOpenedAck) message;
-            PromiseWithHandles<String> promise = this.lineOpenPromises.remove(packet.nonce);
-            if (promise != null) {
-                promise.resolve(packet.lineId);
-            }
-            return;
-        }
-
-        // ------------------------
-        // Both sides
-        // ------------------------
-
-        if (message instanceof PacketLineClose) {
-            PacketLineClose packet = (PacketLineClose) message;
-
-            WeakReference<Line> $ref = Line.instances.get(packet.lineId);
-            if ($ref != null) {
-                Line line = $ref.get();
-                if (line != null) {
-                    handleClose(line, false);
+            case LINE_OPENED: {
+                PacketLineOpened packet = (PacketLineOpened) rawPacket;
+                PromiseWithHandles<String> promise = this.lineOpenPromises.remove(packet.nonce);
+                if (promise != null) {
+                    promise.resolve(packet.lineId);
                 }
+                return;
             }
-            return;
-        }
 
-        if (message instanceof PacketLineByteMessage) {
-            PacketLineByteMessage packet = (PacketLineByteMessage) message;
-
-            WeakReference<Line> $ref = Line.instances.get(packet.lineId);
-            if ($ref != null) {
-                Line line = $ref.get();
-                if (line != null) {
-                    line.listener.handleMessage(packet.type, packet.message);
+            case LINE_OPEN_REJECTED: {
+                PacketLineOpenRejected packet = (PacketLineOpenRejected) rawPacket;
+                PromiseWithHandles<String> promise = this.lineOpenPromises.remove(packet.nonce);
+                if (promise != null) {
+                    promise.reject(new IOException("Rejected."));
                 }
+                return;
             }
-            return;
-        }
 
-        if (message instanceof PacketLineObjectMessage) {
-            PacketLineObjectMessage packet = (PacketLineObjectMessage) message;
+            // ------------------------
+            // Server side
+            // ------------------------
 
-            WeakReference<Line> $ref = Line.instances.get(packet.lineId);
-            if ($ref != null) {
-                Line line = $ref.get();
-                if (line != null) {
-                    line.listener.handleMessage(packet.message);
+            case AUTHENTICATE_HANDSHAKE: {
+                return; // Handled in KawaNetwork.
+            }
+
+            case LINE_OPEN_REQUEST: {
+                return; // Handled in KawaNetwork.
+            }
+
+            case LINE_OPENED_ACK: {
+                PacketLineOpenedAck packet = (PacketLineOpenedAck) rawPacket;
+                PromiseWithHandles<String> promise = this.lineOpenPromises.remove(packet.nonce);
+                if (promise != null) {
+                    promise.resolve(packet.lineId);
                 }
+                return;
             }
-            return;
-        }
 
-        FastLogger.logStatic("Unknown message: %s", message);
+            // ------------------------
+            // Both sides
+            // ------------------------
+
+            case LINE_CLOSE: {
+                PacketLineClose packet = (PacketLineClose) rawPacket;
+
+                WeakReference<Line> $ref = Line.instances.get(packet.lineId);
+                if ($ref != null) {
+                    Line line = $ref.get();
+                    if (line != null) {
+                        handleClose(line, false);
+                    }
+                }
+                return;
+            }
+
+            case LINE_BYTE_MESSAGE: {
+                PacketLineByteMessage packet = (PacketLineByteMessage) rawPacket;
+
+                WeakReference<Line> $ref = Line.instances.get(packet.lineId);
+                if ($ref != null) {
+                    Line line = $ref.get();
+                    if (line != null) {
+                        line.listener.handleMessage(packet.type, packet.message);
+                    }
+                }
+                return;
+            }
+
+            case LINE_OBJECT_MESSAGE: {
+                PacketLineObjectMessage packet = (PacketLineObjectMessage) rawPacket;
+
+                WeakReference<Line> $ref = Line.instances.get(packet.lineId);
+                if ($ref != null) {
+                    Line line = $ref.get();
+                    if (line != null) {
+                        line.listener.handleMessage(packet.message);
+                    }
+                }
+                return;
+            }
+        }
     }
 
 }
