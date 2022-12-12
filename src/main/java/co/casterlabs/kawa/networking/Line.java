@@ -56,7 +56,7 @@ public class Line {
 
         default void onOpen(Line line) {}
 
-        default void handleMessage(int type, byte[] trueMessage) {}
+        default void handleMessage(byte type, byte[] trueMessage) {}
 
         default void handleMessage(Object trueMessage) {}
 
