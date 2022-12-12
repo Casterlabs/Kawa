@@ -9,7 +9,7 @@ import lombok.ToString;
 @AllArgsConstructor
 public class PacketLineMessageByte implements Packet {
     public String lineId;
-    public int type;
+    public byte type;
     public byte[] message;
 
     @Override
