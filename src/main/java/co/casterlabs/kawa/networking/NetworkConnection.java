@@ -9,12 +9,13 @@ import java.util.Map;
 
 import co.casterlabs.commons.async.PromiseWithHandles;
 import co.casterlabs.kawa.networking.packets.Packet;
-import co.casterlabs.kawa.networking.packets.PacketLineMessageByte;
 import co.casterlabs.kawa.networking.packets.PacketLineClose;
+import co.casterlabs.kawa.networking.packets.PacketLineMessageByte;
 import co.casterlabs.kawa.networking.packets.PacketLineMessageObject;
 import co.casterlabs.kawa.networking.packets.PacketLineOpenRejected;
 import co.casterlabs.kawa.networking.packets.PacketLineOpened;
 import co.casterlabs.kawa.networking.packets.PacketLineOpenedAck;
+import xyz.e3ndr.fastloggingframework.logging.FastLogger;
 
 abstract class NetworkConnection {
     final List<Line> activeLines = new LinkedList<>();
@@ -42,8 +43,7 @@ abstract class NetworkConnection {
     /**
      * @return true if the message was handled. false if you should handle it.
      */
-    public void handleMessage(Packet rawPacket) {
-
+    void handleMessage(Packet rawPacket) throws Throwable {
         switch (rawPacket.getType()) {
             // ------------------------
             // Client side
@@ -123,13 +123,17 @@ abstract class NetworkConnection {
             }
 
             case LINE_MESSAGE_OBJECT: {
+                FastLogger.logStatic(1);
                 PacketLineMessageObject packet = (PacketLineMessageObject) rawPacket;
 
+                FastLogger.logStatic(2);
                 WeakReference<Line> $ref = Line.instances.get(packet.lineId);
                 if ($ref != null) {
+                    FastLogger.logStatic(3);
                     Line line = $ref.get();
                     if (line != null) {
-                        line.listener.handleMessage(packet.message);
+                        FastLogger.logStatic(4);
+                        line.listener.handleMessage(packet.getTrueMessageObject());
                     }
                 }
                 return;

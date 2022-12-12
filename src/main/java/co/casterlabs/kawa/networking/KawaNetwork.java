@@ -133,7 +133,12 @@ public class KawaNetwork {
                     }
 
                     if (message instanceof FrameworkMessage.KeepAlive) return;
-                    nw.handleMessage((Packet) message);
+
+                    try {
+                        nw.handleMessage((Packet) message);
+                    } catch (Throwable t) {
+                        Kawa.LOGGER.severe("[Network Client] Uncaught:\n%s", t);
+                    }
                 }
 
                 @Override
@@ -258,7 +263,12 @@ public class KawaNetwork {
                 }
 
                 if (message instanceof FrameworkMessage.KeepAlive) return;
-                nw.handleMessage((Packet) message);
+
+                try {
+                    nw.handleMessage((Packet) message);
+                } catch (Throwable t) {
+                    Kawa.LOGGER.severe("[Network Server] Uncaught:\n%s", t);
+                }
             }
 
             @Override
