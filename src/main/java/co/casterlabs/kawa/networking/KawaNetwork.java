@@ -181,14 +181,16 @@ public class KawaNetwork {
                     PacketAuthenticateHandshake auth = (PacketAuthenticateHandshake) message;
                     if (auth.password.equals(password)) {
                         // Connected.
-                        this.connMap.put(conn, new NetworkConnection() {
+                        NetworkConnection nw = new NetworkConnection() {
                             @Override
                             void send(Packet packet) {
                                 Kawa.LOGGER.trace("[Network Server] Send: %s", packet);
                                 conn.sendTCP(packet); // TODO UDP?
                             }
-                        });
-                        conn.sendTCP(new PacketAuthenticateSuccess());
+                        };
+
+                        this.connMap.put(conn, nw);
+                        nw.send(new PacketAuthenticateSuccess());
                         return;
                     }
                     // Fallthrough.
