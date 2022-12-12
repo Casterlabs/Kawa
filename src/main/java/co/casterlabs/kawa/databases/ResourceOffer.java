@@ -15,6 +15,7 @@ public class ResourceOffer {
     public String address;
     public long offeredAt;
     public int numberOfClients;
+    public int maxNumberOfClients;
     public boolean isSaturated = false;
 
     public boolean isExpired() {

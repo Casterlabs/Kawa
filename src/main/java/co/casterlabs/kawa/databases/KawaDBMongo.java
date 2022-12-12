@@ -64,7 +64,8 @@ public class KawaDBMongo implements KawaDB {
                 while (true) {
                     offer.numberOfClients = KawaNetwork.getNumberOfClients();
                     offer.offeredAt = System.currentTimeMillis();
-                    offer.isSaturated = offer.numberOfClients > Kawa.getMaxNumberOfClients();
+                    offer.maxNumberOfClients = Kawa.getMaxNumberOfClients();
+                    offer.isSaturated = offer.numberOfClients > offer.maxNumberOfClients;
 
                     this.jongo
                         .getCollection("resources")
