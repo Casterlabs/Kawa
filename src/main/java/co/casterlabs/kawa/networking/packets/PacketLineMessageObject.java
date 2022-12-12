@@ -52,26 +52,31 @@ class GZipUtil {
 
     @SneakyThrows
     static String ungzip(byte[] bytes) {
-        ByteArrayOutputStream sink = new ByteArrayOutputStream();
-        GZIPInputStream gzip = new GZIPInputStream(new ByteArrayInputStream(bytes));
+        try (
+            ByteArrayOutputStream sink = new ByteArrayOutputStream();
+            GZIPInputStream gzip = new GZIPInputStream(new ByteArrayInputStream(bytes))) {
 
-        byte[] buffer = new byte[BUFFER_SIZE];
-        int read = 0;
-        while ((read = gzip.read(buffer)) != -1) {
-            sink.write(buffer, 0, read);
+            byte[] buffer = new byte[BUFFER_SIZE];
+            int read = 0;
+            while ((read = gzip.read(buffer)) != -1) {
+                sink.write(buffer, 0, read);
+            }
+
+            return new String(sink.toByteArray(), CHARSET);
         }
-
-        return new String(sink.toByteArray(), CHARSET);
     }
 
     @SneakyThrows
     static byte[] gzip(String string) {
-        ByteArrayOutputStream sink = new ByteArrayOutputStream();
-        GZIPOutputStream gzip = new GZIPOutputStream(sink);
+        try (
+            ByteArrayOutputStream sink = new ByteArrayOutputStream();
+            GZIPOutputStream gzip = new GZIPOutputStream(sink)) {
 
-        gzip.write(string.getBytes(CHARSET));
+            gzip.write(string.getBytes(CHARSET));
+            gzip.close();
 
-        return sink.toByteArray();
+            return sink.toByteArray();
+        }
     }
 
 }
