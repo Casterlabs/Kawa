@@ -14,7 +14,7 @@
 
 # Common
 *target/
-*plugins/
+Kawa-Framework/plugins/
 
 # Misc
 *.versionsBackup
