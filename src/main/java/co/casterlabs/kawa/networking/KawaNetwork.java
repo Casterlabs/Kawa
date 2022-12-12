@@ -3,6 +3,8 @@ package co.casterlabs.kawa.networking;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
@@ -10,6 +12,7 @@ import java.util.concurrent.TimeUnit;
 import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryonet.Client;
 import com.esotericsoftware.kryonet.Connection;
+import com.esotericsoftware.kryonet.FrameworkMessage;
 import com.esotericsoftware.kryonet.Listener;
 import com.esotericsoftware.kryonet.Server;
 
@@ -121,6 +124,7 @@ public class KawaNetwork {
                         return;
                     }
 
+                    if (message instanceof FrameworkMessage.KeepAlive) return;
                     nw.handleMessage((Packet) message);
                 }
 
@@ -243,6 +247,7 @@ public class KawaNetwork {
                     return;
                 }
 
+                if (message instanceof FrameworkMessage.KeepAlive) return;
                 nw.handleMessage((Packet) message);
             }
 
