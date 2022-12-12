@@ -34,7 +34,7 @@ public class Kawa {
         KawaNetwork.startServer(thisAddress, password, resourceProviders);
     }
 
-    public Line getResource(String resourceId, Line.Listener listener, boolean tryNextIfFailed) throws IOException {
+    public static Line getResource(String resourceId, Line.Listener listener, boolean tryNextIfFailed) throws IOException {
         List<ResourceOffer> offers = ResourceOffer.sort(db.findResource(resourceId));
         IOException exception = new IOException("No offers.");
 
@@ -50,13 +50,13 @@ public class Kawa {
         throw exception;
     }
 
-    public void offerResource(String resourceId, KawaResource resourceProvider) {
+    public static void offerResource(String resourceId, KawaResource resourceProvider) {
         assert !Kawa.isClientOnlyMode() : "Clients cannot offer resources.";
         db.offerResource(resourceId);
         resourceProviders.put(resourceId, resourceProvider);
     }
 
-    public void unofferResource(String resourceId) {
+    public static void unofferResource(String resourceId) {
         resourceProviders.remove(resourceId);
         db.unofferResource(resourceId);
     }
