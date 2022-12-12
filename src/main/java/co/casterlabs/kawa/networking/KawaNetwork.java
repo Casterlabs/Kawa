@@ -15,6 +15,7 @@ import com.esotericsoftware.kryonet.Server;
 
 import co.casterlabs.commons.async.AsyncTask;
 import co.casterlabs.commons.async.PromiseWithHandles;
+import co.casterlabs.kawa.Kawa;
 import co.casterlabs.kawa.KawaResource;
 import co.casterlabs.kawa.networking.packets.Packet;
 import co.casterlabs.kawa.networking.packets.PacketAuthenticateHandshake;
@@ -24,7 +25,6 @@ import co.casterlabs.kawa.networking.packets.PacketLineOpenRequest;
 import co.casterlabs.kawa.networking.packets.PacketLineOpened;
 import co.casterlabs.kawa.networking.packets.PacketLineOpenedAck;
 import lombok.Getter;
-import xyz.e3ndr.fastloggingframework.logging.FastLogger;
 
 public class KawaNetwork {
     public static final int KAWA_PORT = 32977;
@@ -106,6 +106,8 @@ public class KawaNetwork {
 
                 @Override
                 public void received(Connection conn, Object message) {
+                    Kawa.LOGGER.trace("[Network] Client recv: %s", message);
+
                     if (message instanceof PacketAuthenticateSuccess) {
                         // Connection is ready to be used!
                         this.hasCompletedHandshake = true;
@@ -161,6 +163,8 @@ public class KawaNetwork {
 
             @Override
             public void received(Connection conn, Object message) {
+                Kawa.LOGGER.trace("[Network] Server recv: %s", message);
+
                 if (message instanceof PacketAuthenticateHandshake) {
                     PacketAuthenticateHandshake auth = (PacketAuthenticateHandshake) message;
                     if (auth.password.equals(password)) {
@@ -179,7 +183,7 @@ public class KawaNetwork {
 
                 NetworkConnection nw = this.connMap.get(conn);
                 if (nw == null) {
-                    FastLogger.logStatic("Client (%s) failed auth, disconnecting.", conn.getRemoteAddressTCP());
+                    Kawa.LOGGER.warn("[Network]Client (%s) failed auth, disconnecting.", conn.getRemoteAddressTCP());
                     conn.close();
                     return;
                 }

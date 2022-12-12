@@ -1,5 +1,8 @@
 package co.casterlabs.kawa.networking.packets;
 
+import lombok.ToString;
+
+@ToString
 public class PacketAuthenticateSuccess implements Packet {
 
     @Override

@@ -13,8 +13,11 @@ import co.casterlabs.kawa.networking.KawaNetwork;
 import co.casterlabs.kawa.networking.Line;
 import lombok.Getter;
 import lombok.Setter;
+import xyz.e3ndr.fastloggingframework.logging.FastLogger;
 
 public class Kawa {
+    public static final FastLogger LOGGER = new FastLogger();
+
     private static @Getter @Nullable String thisAddress;
     private static @Setter String password;
     private static @Setter KawaDB db;
@@ -32,13 +35,18 @@ public class Kawa {
         assert password != null : "You must set the password before listening.";
         Kawa.thisAddress = thisAddress;
         KawaNetwork.startServer(thisAddress, password, resourceProviders);
+        LOGGER.debug("Listening on: %s:%d", thisAddress, KawaNetwork.KAWA_PORT);
     }
 
     public static Line getResource(String resourceId, Line.Listener listener, boolean tryNextIfFailed) throws IOException {
+        LOGGER.debug("Attempting to retrieve resource: %s (tryNextIfFailed=%b)", resourceId, tryNextIfFailed);
+
         List<ResourceOffer> offers = ResourceOffer.sort(db.findResource(resourceId));
         IOException exception = new IOException("No offers.");
 
         for (ResourceOffer offer : offers) {
+            LOGGER.debug("Trying resource: %s", offer);
+
             try {
                 return KawaNetwork.openLine(offer.address, password, resourceId, listener);
             } catch (IOException e) {
@@ -54,11 +62,13 @@ public class Kawa {
         assert !Kawa.isClientOnlyMode() : "Clients cannot offer resources.";
         db.offerResource(resourceId);
         resourceProviders.put(resourceId, resourceProvider);
+        LOGGER.debug("Offering: %s (with %s)", resourceId, resourceProvider);
     }
 
     public static void unofferResource(String resourceId) {
         resourceProviders.remove(resourceId);
         db.unofferResource(resourceId);
+        LOGGER.debug("Un-offering: %s", resourceId);
     }
 
     public static boolean isClientOnlyMode() {

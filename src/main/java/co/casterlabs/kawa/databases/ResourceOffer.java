@@ -5,6 +5,9 @@ import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.List;
 
+import lombok.ToString;
+
+@ToString
 public class ResourceOffer {
     private static final Comparator<ResourceOffer> comparator = (o1, o2) -> Integer.compare(o1.numberOfClients, o2.numberOfClients);
 

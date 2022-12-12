@@ -1,7 +1,9 @@
 package co.casterlabs.kawa.networking.packets;
 
 import lombok.AllArgsConstructor;
+import lombok.ToString;
 
+@ToString
 @AllArgsConstructor
 public class PacketLineOpened implements Packet {
     public String nonce;
