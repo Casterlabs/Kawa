@@ -52,6 +52,8 @@ public class KawaNetwork {
 
         // Register a promise which we'll use to wait for the value.
         PromiseWithHandles<String> openPromise = new PromiseWithHandles<>();
+        openPromise.except((t) -> {
+        });
         nw.lineOpenPromises.put(nonce, openPromise);
 
         // Ask for a line to the resource.
@@ -84,6 +86,8 @@ public class KawaNetwork {
             KawaNetwork.setupKryo(client.getKryo());
 
             PromiseWithHandles<Void> handshakePromise = new PromiseWithHandles<>();
+            handshakePromise.except((t) -> {
+            });
             NetworkConnection nw = new NetworkConnection() {
                 @Override
                 void send(Packet packet) {
@@ -205,6 +209,8 @@ public class KawaNetwork {
 
                     // Register our connect promise.
                     PromiseWithHandles<String> ackPromise = new PromiseWithHandles<>();
+                    ackPromise.except((t) -> {
+                    });
                     nw.lineOpenPromises.put(packet.nonce, ackPromise);
 
                     AsyncTask.create(() -> {
