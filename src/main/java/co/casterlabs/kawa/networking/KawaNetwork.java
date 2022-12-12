@@ -91,6 +91,7 @@ public class KawaNetwork {
             NetworkConnection nw = new NetworkConnection() {
                 @Override
                 void send(Packet packet) {
+                    Kawa.LOGGER.trace("[Network] Client send: %s", packet);
                     client.sendTCP(packet);
                 }
 
@@ -105,6 +106,7 @@ public class KawaNetwork {
 
                 @Override
                 public void connected(Connection conn) {
+                    Kawa.LOGGER.trace("[Network] Client connect");
                     nw.send(new PacketAuthenticateHandshake(password));
                 }
 
@@ -124,6 +126,7 @@ public class KawaNetwork {
 
                 @Override
                 public void disconnected(Connection conn) {
+                    Kawa.LOGGER.trace("[Network] Client disconnect");
                     if (this.hasCompletedHandshake) {
                         NetworkConnection nw = clientConnections.remove(address);
                         if (nw == null) return;
@@ -162,6 +165,7 @@ public class KawaNetwork {
 
             @Override
             public void connected(Connection conn) {
+                Kawa.LOGGER.trace("[Network] (Server) Client connect.");
                 numberOfClients++;
             }
 
@@ -176,6 +180,7 @@ public class KawaNetwork {
                         this.connMap.put(conn, new NetworkConnection() {
                             @Override
                             void send(Packet packet) {
+                                Kawa.LOGGER.trace("[Network] Server send: %s", packet);
                                 conn.sendTCP(packet); // TODO UDP?
                             }
                         });
@@ -243,6 +248,7 @@ public class KawaNetwork {
 
             @Override
             public void disconnected(Connection conn) {
+                Kawa.LOGGER.trace("[Network] (Server) Client disconnect.");
                 numberOfClients--;
 
                 NetworkConnection nw = this.connMap.remove(conn);
