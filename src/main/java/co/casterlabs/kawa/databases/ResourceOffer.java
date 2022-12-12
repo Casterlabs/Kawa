@@ -5,6 +5,8 @@ import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import lombok.ToString;
 
 @ToString
@@ -18,6 +20,7 @@ public class ResourceOffer {
     public int maxNumberOfClients;
     public boolean isSaturated = false;
 
+    @JsonIgnore
     public boolean isExpired() {
         return (System.currentTimeMillis() - this.offeredAt) > KawaDB.OFFER_TIMEOUT;
     }
