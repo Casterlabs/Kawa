@@ -42,8 +42,8 @@ public class ResourceOffer {
 
         // Janky way of sorting by numberOfClients AND by isSaturated.
         ArrayList<ResourceOffer> sorted = new ArrayList<>(unsaturated.size() + saturated.size());
-        offers.addAll(unsaturated);
-        offers.addAll(saturated);
+        sorted.addAll(unsaturated);
+        sorted.addAll(saturated);
 
         return sorted;
     }
