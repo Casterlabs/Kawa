@@ -15,7 +15,6 @@ import co.casterlabs.kawa.networking.packets.PacketLineMessageObject;
 import co.casterlabs.kawa.networking.packets.PacketLineOpenRejected;
 import co.casterlabs.kawa.networking.packets.PacketLineOpened;
 import co.casterlabs.kawa.networking.packets.PacketLineOpenedAck;
-import xyz.e3ndr.fastloggingframework.logging.FastLogger;
 
 abstract class NetworkConnection {
     final List<Line> activeLines = new LinkedList<>();
@@ -123,16 +122,12 @@ abstract class NetworkConnection {
             }
 
             case LINE_MESSAGE_OBJECT: {
-                FastLogger.logStatic(1);
                 PacketLineMessageObject packet = (PacketLineMessageObject) rawPacket;
 
-                FastLogger.logStatic(2);
                 WeakReference<Line> $ref = Line.instances.get(packet.lineId);
                 if ($ref != null) {
-                    FastLogger.logStatic(3);
                     Line line = $ref.get();
                     if (line != null) {
-                        FastLogger.logStatic(4);
                         line.listener.handleMessage(packet.getTrueMessageObject());
                     }
                 }
