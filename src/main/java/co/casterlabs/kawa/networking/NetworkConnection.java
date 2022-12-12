@@ -3,8 +3,6 @@ package co.casterlabs.kawa.networking;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Map;
 
 import co.casterlabs.commons.async.PromiseWithHandles;
@@ -17,7 +15,7 @@ import co.casterlabs.kawa.networking.packets.PacketLineOpened;
 import co.casterlabs.kawa.networking.packets.PacketLineOpenedAck;
 
 abstract class NetworkConnection {
-    final List<Line> activeLines = new LinkedList<>();
+    final Map<String, WeakReference<Line>> lines = new HashMap<>();
 
     // The promise's resolved value is the lineId.
     // All rejects are IOExceptions.
@@ -30,8 +28,8 @@ abstract class NetworkConnection {
     }
 
     protected void handleClose(Line line, boolean isNetworkDisconnect) {
-        this.activeLines.remove(line);
-        if (this.activeLines.isEmpty()) {
+        this.lines.remove(line.id);
+        if (this.lines.isEmpty()) {
             this.onEmptyLines();
         }
 
@@ -98,7 +96,7 @@ abstract class NetworkConnection {
             case LINE_CLOSE: {
                 PacketLineClose packet = (PacketLineClose) rawPacket;
 
-                WeakReference<Line> $ref = Line.instances.get(packet.lineId);
+                WeakReference<Line> $ref = this.lines.get(packet.lineId);
                 if ($ref != null) {
                     Line line = $ref.get();
                     if (line != null) {
@@ -111,7 +109,7 @@ abstract class NetworkConnection {
             case LINE_MESSAGE_BYTE: {
                 PacketLineMessageByte packet = (PacketLineMessageByte) rawPacket;
 
-                WeakReference<Line> $ref = Line.instances.get(packet.lineId);
+                WeakReference<Line> $ref = this.lines.get(packet.lineId);
                 if ($ref != null) {
                     Line line = $ref.get();
                     if (line != null) {
@@ -124,7 +122,7 @@ abstract class NetworkConnection {
             case LINE_MESSAGE_OBJECT: {
                 PacketLineMessageObject packet = (PacketLineMessageObject) rawPacket;
 
-                WeakReference<Line> $ref = Line.instances.get(packet.lineId);
+                WeakReference<Line> $ref = this.lines.get(packet.lineId);
                 if ($ref != null) {
                     Line line = $ref.get();
                     if (line != null) {

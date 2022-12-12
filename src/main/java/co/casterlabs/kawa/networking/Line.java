@@ -2,18 +2,15 @@ package co.casterlabs.kawa.networking;
 
 import java.io.IOException;
 import java.lang.ref.WeakReference;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.UUID;
 
-import co.casterlabs.kawa.networking.packets.PacketLineMessageByte;
 import co.casterlabs.kawa.networking.packets.PacketLineClose;
+import co.casterlabs.kawa.networking.packets.PacketLineMessageByte;
 import co.casterlabs.kawa.networking.packets.PacketLineMessageObject;
 import lombok.Getter;
 import lombok.NonNull;
 
 public class Line {
-    static final Map<String, WeakReference<Line>> instances = new HashMap<>();
     private final WeakReference<Line> $ref = new WeakReference<>(this);
 
     public final String id;
@@ -27,6 +24,7 @@ public class Line {
         this.id = id;
         this.conn = conn;
         this.listener = listener;
+        this.conn.lines.put(this.id, $ref);
     }
 
     Line(NetworkConnection conn, @NonNull Listener listener) {
@@ -35,10 +33,8 @@ public class Line {
 
     @Override
     protected void finalize() {
-        synchronized (instances) {
-            instances.remove(this.id);
-            $ref.clear();
-        }
+        this.conn.lines.remove(this.id);
+        $ref.clear();
     }
 
     public void sendMessage(Object message) throws IOException {

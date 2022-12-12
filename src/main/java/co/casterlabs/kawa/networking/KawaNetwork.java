@@ -151,6 +151,14 @@ public class KawaNetwork {
                         nw.lineOpenPromises
                             .values()
                             .forEach((p) -> p.reject(new IOException("Connection was closed.")));
+
+                        new ArrayList<>(nw.lines.values())
+                            .forEach(($ref) -> {
+                                Line line = $ref.get();
+                                if (line != null) {
+                                    nw.handleClose(line, true);
+                                }
+                            });
                     } else {
                         handshakePromise.reject(new IOException("Disconnected during handshake."));
                     }
@@ -279,8 +287,13 @@ public class KawaNetwork {
                 NetworkConnection nw = this.connMap.remove(conn);
                 if (nw == null) return;
 
-                new ArrayList<>(nw.activeLines)
-                    .forEach((l) -> nw.handleClose(l, true));
+                new ArrayList<>(nw.lines.values())
+                    .forEach(($ref) -> {
+                        Line line = $ref.get();
+                        if (line != null) {
+                            nw.handleClose(line, true);
+                        }
+                    });
             }
 
         });
