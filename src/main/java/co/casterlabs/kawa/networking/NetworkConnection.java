@@ -21,7 +21,7 @@ abstract class NetworkConnection {
     // All rejects are IOExceptions.
     final Map<String, PromiseWithHandles<String>> lineOpenPromises = new HashMap<>();
 
-    abstract void send(Packet packet);
+    abstract void send(Packet packet, boolean reliable);
 
     void onEmptyLines() {
         // Override as needed.

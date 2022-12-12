@@ -70,7 +70,7 @@ public class KawaNetwork {
         nw.lineOpenPromises.put(nonce, openPromise);
 
         // Ask for a line to the resource.
-        nw.send(new PacketLineOpenRequest(nonce, resourceId));
+        nw.send(new PacketLineOpenRequest(nonce, resourceId), true);
 
         // Wait for either the line or a rejection.
         String lineId;
@@ -84,7 +84,7 @@ public class KawaNetwork {
         Line line = new Line(lineId, nw, listener);
 
         // Tell the server that we've allocated the resources and are now ready.
-        nw.send(new PacketLineOpenedAck(nonce, resourceId));
+        nw.send(new PacketLineOpenedAck(nonce, resourceId), true);
 
         // We're open!
         line.listener.onOpen(line);
@@ -103,9 +103,13 @@ public class KawaNetwork {
             });
             NetworkConnection nw = new NetworkConnection() {
                 @Override
-                void send(Packet packet) {
+                void send(Packet packet, boolean reliable) {
                     Kawa.LOGGER.trace("[Network Client] Send: %s", packet);
-                    client.sendTCP(packet);
+                    if (reliable) {
+                        client.sendTCP(packet);
+                    } else {
+                        client.sendUDP(packet);
+                    }
                 }
 
                 @Override
@@ -120,7 +124,7 @@ public class KawaNetwork {
                 @Override
                 public void connected(Connection conn) {
                     Kawa.LOGGER.trace("[Network Client] Connected");
-                    nw.send(new PacketAuthenticateHandshake(password));
+                    nw.send(new PacketAuthenticateHandshake(password), true);
                 }
 
                 @Override
@@ -206,14 +210,18 @@ public class KawaNetwork {
                         // Connected.
                         NetworkConnection nw = new NetworkConnection() {
                             @Override
-                            void send(Packet packet) {
+                            void send(Packet packet, boolean reliable) {
                                 Kawa.LOGGER.trace("[Network Server] Send: %s", packet);
-                                conn.sendTCP(packet); // TODO UDP?
+                                if (reliable) {
+                                    conn.sendTCP(packet);
+                                } else {
+                                    conn.sendUDP(packet);
+                                }
                             }
                         };
 
                         this.connMap.put(conn, nw);
-                        nw.send(new PacketAuthenticateSuccess());
+                        nw.send(new PacketAuthenticateSuccess(), true);
                         return;
                     }
                     // Fallthrough.
@@ -231,13 +239,13 @@ public class KawaNetwork {
 
                     KawaResource resourceProvider = resourceProviders.get(packet.resourceId);
                     if (resourceProvider == null) {
-                        nw.send(new PacketLineOpenRejected(packet.nonce));
+                        nw.send(new PacketLineOpenRejected(packet.nonce), true);
                         return;
                     }
 
                     Line.Listener lineListener = resourceProvider.accept(packet.resourceId);
                     if (lineListener == null) {
-                        nw.send(new PacketLineOpenRejected(packet.nonce));
+                        nw.send(new PacketLineOpenRejected(packet.nonce), true);
                         return;
                     }
 
@@ -255,7 +263,7 @@ public class KawaNetwork {
                         if (ackPromise.hasCompleted()) return;
 
                         // We timed out, reject.
-                        nw.send(new PacketLineOpenRejected(packet.nonce));
+                        nw.send(new PacketLineOpenRejected(packet.nonce), true);
                         nw.lineOpenPromises.remove(packet.nonce);
                     });
 
@@ -268,7 +276,7 @@ public class KawaNetwork {
                         line.close();
                     });
 
-                    nw.send(new PacketLineOpened(packet.nonce, line.id)); // Notify client of acceptance.
+                    nw.send(new PacketLineOpened(packet.nonce, line.id), true); // Notify client of acceptance.
                     return;
                 }
 

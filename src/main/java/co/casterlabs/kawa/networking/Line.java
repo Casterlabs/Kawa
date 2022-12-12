@@ -37,18 +37,18 @@ public class Line {
         $ref.clear();
     }
 
-    public void sendMessage(Object message) throws IOException {
+    public void sendMessage(Object message, boolean reliable) throws IOException {
         assert this.isOpen : "Line is closed.";
-        this.conn.send(new PacketLineMessageObject(this.id, message));
+        this.conn.send(new PacketLineMessageObject(this.id, message), reliable);
     }
 
-    public void sendMessage(byte type, byte[] message) throws IOException {
+    public void sendMessage(byte type, byte[] message, boolean reliable) throws IOException {
         assert this.isOpen : "Line is closed.";
-        this.conn.send(new PacketLineMessageByte(this.id, type, message));
+        this.conn.send(new PacketLineMessageByte(this.id, type, message), reliable);
     }
 
     public void close() {
-        this.conn.send(new PacketLineClose(this.id));
+        this.conn.send(new PacketLineClose(this.id), true);
         this.conn.handleClose(this, false);
     }
 
