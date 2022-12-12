@@ -56,11 +56,11 @@ public class Line {
 
         default void onOpen(Line line) {}
 
-        default void handleMessage(byte type, byte[] trueMessage) {}
+        default void handleMessage(Line line, byte type, byte[] trueMessage) {}
 
-        default void handleMessage(Object trueMessage) {}
+        default void handleMessage(Line line, Object trueMessage) {}
 
-        default void onClose(boolean isNetworkDisconnect) {}
+        default void onClose(Line line, boolean isNetworkDisconnect) {}
 
     }
 

@@ -34,7 +34,7 @@ abstract class NetworkConnection {
         }
 
         line.isOpen = false;
-        line.listener.onClose(isNetworkDisconnect);
+        line.listener.onClose(line, isNetworkDisconnect);
     }
 
     /**
@@ -113,7 +113,7 @@ abstract class NetworkConnection {
                 if ($ref != null) {
                     Line line = $ref.get();
                     if (line != null) {
-                        line.listener.handleMessage(packet.type, packet.message);
+                        line.listener.handleMessage(line, packet.type, packet.message);
                     }
                 }
                 return;
@@ -126,7 +126,7 @@ abstract class NetworkConnection {
                 if ($ref != null) {
                     Line line = $ref.get();
                     if (line != null) {
-                        line.listener.handleMessage(packet.getTrueMessageObject());
+                        line.listener.handleMessage(line, packet.getTrueMessageObject());
                     }
                 }
                 return;
