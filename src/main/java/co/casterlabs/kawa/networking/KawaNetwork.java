@@ -42,6 +42,7 @@ public class KawaNetwork {
         for (Packet.Type type : Packet.Type.values()) {
             kryoTypes.add(type.clazz);
         }
+        kryoTypes.add(CompressionAlgorithm.class);
         kryoTypes.add(byte[].class);
     }
 

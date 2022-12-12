@@ -1,40 +1,45 @@
 package co.casterlabs.kawa.networking.packets;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
-import java.util.zip.GZIPInputStream;
-import java.util.zip.GZIPOutputStream;
+import java.io.IOException;
 
+import co.casterlabs.kawa.networking.CompressionAlgorithm;
 import co.casterlabs.rakurai.json.Rson;
-import co.casterlabs.rakurai.json.serialization.JsonParseException;
-import co.casterlabs.rakurai.json.validation.JsonValidationException;
 import lombok.NoArgsConstructor;
-import lombok.SneakyThrows;
 import lombok.ToString;
 
 @ToString
 @NoArgsConstructor
 public class PacketLineMessageObject implements Packet {
     public String lineId;
-    private String valueClass;
-    private byte[] value;
 
-    public PacketLineMessageObject(String lineId, Object message) {
+    private byte[] value;
+    private String valueClass;
+    private CompressionAlgorithm valueCompression;
+
+    public PacketLineMessageObject(String lineId, Object message) throws IOException {
+        String rawJson = Rson.DEFAULT
+            .toJson(message)
+            .toString(false);
+
         this.lineId = lineId;
         this.valueClass = message.getClass().getTypeName();
-        this.value = GZipUtil.gzip(
-            Rson.DEFAULT
-                .toJson(message)
-                .toString(false)
-        );
+
+        // "Probe" the content to figure out the best compression algorithm. Json is
+        // pretty repetitive in it's syntax and has a limited range of characters,
+        // making it perfect for this.
+        // TODO There's probably a fast & analytical way to do this.
+        this.valueCompression = rawJson.length() > 150 ? //
+            CompressionAlgorithm.GZIP : CompressionAlgorithm.NONE;
+
+        this.value = this.valueCompression.compress(rawJson);
     }
 
-    public Object getTrueMessageObject() throws ClassNotFoundException, JsonValidationException, JsonParseException {
+    public Object getTrueMessageObject() throws ClassNotFoundException, IOException {
         Class<?> valueClass = Class.forName(this.valueClass);
+        String rawJson = this.valueCompression.uncompress(this.value);
+
         return Rson.DEFAULT.fromJson(
-            GZipUtil.ungzip(this.value),
+            rawJson,
             valueClass
         );
     }
@@ -42,41 +47,6 @@ public class PacketLineMessageObject implements Packet {
     @Override
     public Type getType() {
         return Type.LINE_MESSAGE_OBJECT;
-    }
-
-}
-
-class GZipUtil {
-    private static final Charset CHARSET = StandardCharsets.UTF_8;
-    private static final int BUFFER_SIZE = 10240; // 10kb
-
-    @SneakyThrows
-    static String ungzip(byte[] bytes) {
-        try (
-            ByteArrayOutputStream sink = new ByteArrayOutputStream();
-            GZIPInputStream gzip = new GZIPInputStream(new ByteArrayInputStream(bytes))) {
-
-            byte[] buffer = new byte[BUFFER_SIZE];
-            int read = 0;
-            while ((read = gzip.read(buffer)) != -1) {
-                sink.write(buffer, 0, read);
-            }
-
-            return new String(sink.toByteArray(), CHARSET);
-        }
-    }
-
-    @SneakyThrows
-    static byte[] gzip(String string) {
-        try (
-            ByteArrayOutputStream sink = new ByteArrayOutputStream();
-            GZIPOutputStream gzip = new GZIPOutputStream(sink)) {
-
-            gzip.write(string.getBytes(CHARSET));
-            gzip.close();
-
-            return sink.toByteArray();
-        }
     }
 
 }
