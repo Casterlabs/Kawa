@@ -55,6 +55,36 @@
 			<scope>compile</scope>
 		</dependency>
 
+		<dependency>
+			<groupId>org.reflections</groupId>
+			<artifactId>reflections</artifactId>
+			<version>0.9.12</version>
+			<scope>compile</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-nop</artifactId>
+			<version>1.7.30</version>
+			<scope>compile</scope>
+		</dependency>
+		<dependency>
+			<groupId>info.picocli</groupId>
+			<artifactId>picocli</artifactId>
+			<version>4.3.0</version>
+			<scope>compile</scope>
+		</dependency>
+		<dependency>
+			<groupId>com.github.e3ndr</groupId>
+			<artifactId>Consolidate</artifactId>
+			<version>d1a1874</version>
+			<scope>compile</scope>
+		</dependency>
+		<dependency>
+			<groupId>com.github.e3ndr</groupId>
+			<artifactId>ReflectionLib</artifactId>
+			<version>f4b8a8f</version>
+			<scope>compile</scope>
+		</dependency>
 	</dependencies>
 
 </project>
