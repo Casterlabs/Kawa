@@ -36,13 +36,21 @@ public class KawaNetwork {
     private static volatile int numberOfClients = 0;
 
     private static final Map<String, NetworkConnection> clientConnections = new HashMap<>();
+    private static final List<Class<?>> kryoTypes = new LinkedList<>();
+
+    static {
+        for (Packet.Type type : Packet.Type.values()) {
+            kryoTypes.add(type.clazz);
+        }
+        kryoTypes.add(byte[].class);
+    }
 
     public static void setupKryo(Kryo kryo) {
         // We use the hashCode as the unique ID. Kryo internally uses 0-8 for other
         // things so we must also make sure we don't accidentally override those.
-        for (Packet.Type type : Packet.Type.values()) {
-            int id = (type.clazz.hashCode() & 0x7fffffff /*abs*/) + 10;
-            kryo.register(type.clazz, id);
+        for (Class<?> clazz : kryoTypes) {
+            int id = (clazz.hashCode() & 0x7fffffff /*abs*/) + 10;
+            kryo.register(clazz, id);
         }
     }
 
