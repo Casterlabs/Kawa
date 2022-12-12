@@ -30,7 +30,8 @@ import co.casterlabs.kawa.networking.packets.PacketLineOpenedAck;
 import lombok.Getter;
 
 public class KawaNetwork {
-    public static final int KAWA_PORT = 32977;
+    public static final int KAWA_PORT_TCP = 32977;
+    public static final int KAWA_PORT_UDP = 32978;
 
     @Getter
     private static volatile int numberOfClients = 0;
@@ -167,7 +168,7 @@ public class KawaNetwork {
             });
 
             client.start();
-            client.connect((int) TimeUnit.SECONDS.toMillis(2), address, KAWA_PORT);
+            client.connect((int) TimeUnit.SECONDS.toMillis(2), address, KAWA_PORT_TCP, KAWA_PORT_UDP);
 
             try {
                 handshakePromise.await();
@@ -299,7 +300,7 @@ public class KawaNetwork {
 
         });
         server.start();
-        server.bind(KAWA_PORT);
+        server.bind(KAWA_PORT_TCP, KAWA_PORT_UDP);
     }
 
 }

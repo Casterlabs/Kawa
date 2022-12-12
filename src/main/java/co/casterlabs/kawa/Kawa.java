@@ -35,7 +35,7 @@ public class Kawa {
         assert password != null : "You must set the password before listening.";
         Kawa.thisAddress = thisAddress;
         KawaNetwork.startServer(thisAddress, password, resourceProviders);
-        LOGGER.debug("Listening on: %s:%d", thisAddress, KawaNetwork.KAWA_PORT);
+        LOGGER.debug("Listening on: %s:%d", thisAddress, KawaNetwork.KAWA_PORT_TCP);
     }
 
     public static Line getResource(String resourceId, Line.Listener listener, boolean tryNextIfFailed) throws IOException {
